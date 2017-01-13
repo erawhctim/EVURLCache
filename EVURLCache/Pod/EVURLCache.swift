@@ -33,8 +33,8 @@ public class EVURLCache: NSURLCache {
     // Activate EVURLCache
     public class func activate() {
         // set caching paths
-        _cacheDirectory = NSURL(fileURLWithPath: NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0]).URLByAppendingPathComponent(CACHE_FOLDER).absoluteString
-        _preCacheDirectory = NSURL(fileURLWithPath: NSBundle.mainBundle().resourcePath!).URLByAppendingPathComponent(PRE_CACHE_FOLDER).absoluteString
+        _cacheDirectory = NSURL(fileURLWithPath: NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true)[0]).URLByAppendingPathComponent(CACHE_FOLDER)?.absoluteString
+        _preCacheDirectory = NSURL(fileURLWithPath: NSBundle.mainBundle().resourcePath!).URLByAppendingPathComponent(PRE_CACHE_FOLDER)?.absoluteString
 
         let urlCache = EVURLCache(memoryCapacity: 1<<MAX_FILE_SIZE, diskCapacity: 1<<MAX_CACHE_SIZE, diskPath: _cacheDirectory)
 
@@ -63,7 +63,7 @@ public class EVURLCache: NSURLCache {
             return nil
         }
 
-        if url.absoluteString.isEmpty {
+        if url.absoluteString == nil || url.absoluteString!.isEmpty {
             EVURLCache.debugLog("CACHE not allowed for empty URLs")
             return nil
         }
@@ -74,7 +74,7 @@ public class EVURLCache: NSURLCache {
         }
 
         // is caching allowed
-        if ((request.cachePolicy == NSURLRequestCachePolicy.ReloadIgnoringCacheData || url.absoluteString.hasPrefix("file:/") || url.absoluteString.hasPrefix("data:")) && EVURLCache.networkAvailable()) {
+        if ((request.cachePolicy == NSURLRequestCachePolicy.ReloadIgnoringCacheData || (url.absoluteString == nil || url.absoluteString!.hasPrefix("file:/")) || (url.absoluteString == nil || url.absoluteString!.hasPrefix("data:"))) && EVURLCache.networkAvailable()) {
             EVURLCache.debugLog("CACHE not allowed for \(url)")
             return nil
         }
@@ -162,7 +162,7 @@ public class EVURLCache: NSURLCache {
 
         // create storrage folder
         let storagePath: String = EVURLCache.storagePathForRequest(request, rootPath: EVURLCache._cacheDirectory) ?? ""
-        if var storageDirectory: String = NSURL(fileURLWithPath: "\(storagePath)").URLByDeletingLastPathComponent?.absoluteString.stringByRemovingPercentEncoding {
+        if var storageDirectory: String = NSURL(fileURLWithPath: "\(storagePath)").URLByDeletingLastPathComponent?.absoluteString?.stringByRemovingPercentEncoding {
             do {
                 if storageDirectory.hasPrefix("file:") {
                     storageDirectory = storageDirectory.substringFromIndex(storageDirectory.startIndex.advancedBy(5))
